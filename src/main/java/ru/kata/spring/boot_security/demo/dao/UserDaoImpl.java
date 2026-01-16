@@ -1,27 +1,23 @@
-package ru.kata.spring.boot_security.demo.dao;
 
-import javax.persistence.EntityManager;
-import javax.persistence.PersistenceContext;
+package ru.kata.spring.boot_security.demo.dao;
 
 import org.springframework.stereotype.Repository;
 import ru.kata.spring.boot_security.demo.model.User;
 
+import javax.persistence.EntityManager;
+import javax.persistence.PersistenceContext;
 import java.util.List;
 import java.util.Optional;
 
 @Repository
-public class UserDaoImpl implements UserDao {
+public class UserDaoImpl implements UserDao {  // ✅ Правильное имя класса
 
     @PersistenceContext
     private EntityManager em;
 
-    public UserDaoImpl() {
-    }
-
     @Override
     public List<User> getAllUsers() {
-        return em.createQuery
-                ("SELECT u FROM User u", User.class).getResultList();
+        return em.createQuery("SELECT u FROM User u", User.class).getResultList();
     }
 
     @Override

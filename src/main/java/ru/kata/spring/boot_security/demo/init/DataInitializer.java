@@ -5,43 +5,46 @@ import org.springframework.boot.CommandLineRunner;
 import org.springframework.stereotype.Component;
 import ru.kata.spring.boot_security.demo.model.Role;
 import ru.kata.spring.boot_security.demo.model.User;
-import ru.kata.spring.boot_security.demo.repository.UserRepository;
-import ru.kata.spring.boot_security.demo.service.RoleService;
 import ru.kata.spring.boot_security.demo.service.UserService;
 
+import javax.persistence.EntityManager;
+import javax.persistence.PersistenceContext;
 import java.util.HashSet;
 import java.util.Optional;
 import java.util.Set;
 
 @Component
 public class DataInitializer implements CommandLineRunner {
+
     private final UserService userService;
-    private final RoleService roleService;
-    private final UserRepository userRepository;
+
+    @PersistenceContext
+    private EntityManager em;
 
     @Autowired
-    public DataInitializer(UserService userService,
-                           RoleService roleService, UserRepository userRepository) {
+    public DataInitializer(UserService userService) {
         this.userService = userService;
-        this.roleService = roleService;
-        this.userRepository = userRepository;
     }
 
     @Override
     public void run(String... args) {
-        Role adminRole = roleService.getRoleByName("ROLE_ADMIN");
-        if (adminRole == null) {
-            adminRole = new Role("ROLE_ADMIN");
-            roleService.saveRole(adminRole);
-        }
 
-        Role userRole = roleService.getRoleByName("ROLE_USER");
-        if (userRole == null) {
-            userRole = new Role("ROLE_USER");
-            roleService.saveRole(userRole);
-        }
+        Role adminRole = getRoleByName("ROLE_ADMIN")
+                .orElseGet(() -> {
+                    Role newRole = new Role("ROLE_ADMIN");
+                    saveRole(newRole);
+                    return newRole;
+                });
 
-        Optional<User> adminUserOpt = userRepository.findByUsername("admin@mail.ru");
+        Role userRole = getRoleByName("ROLE_USER")
+                .orElseGet(() -> {
+                    Role newRole = new Role("ROLE_USER");
+                    saveRole(newRole);
+                    return newRole;
+                });
+
+
+        Optional<User> adminUserOpt = findUserByUsername("admin@mail.ru");
         if (adminUserOpt.isEmpty()) {
             User adminUser = new User();
             adminUser.setUsername("admin@mail.ru");
@@ -57,7 +60,8 @@ public class DataInitializer implements CommandLineRunner {
                     .toArray(String[]::new);
             userService.saveUser(adminUser, roleNames);
         }
-        Optional<User> regularUserOpt = userRepository.findByUsername("user@mail.ru");
+
+        Optional<User> regularUserOpt = findUserByUsername("user@mail.ru");
         if (regularUserOpt.isEmpty()) {
             User regularUser = new User();
             regularUser.setUsername("user@mail.ru");
@@ -72,5 +76,28 @@ public class DataInitializer implements CommandLineRunner {
                     .toArray(String[]::new);
             userService.saveUser(regularUser, roleNames);
         }
+    }
+
+
+    private Optional<Role> getRoleByName(String roleName) {
+        return em.createQuery("SELECT r FROM Role r WHERE r.name = :roleName", Role.class)
+                .setParameter("roleName", roleName)
+                .getResultList()
+                .stream()
+                .findFirst();
+    }
+
+
+    private void saveRole(Role role) {
+        em.persist(role);
+    }
+
+
+    private Optional<User> findUserByUsername(String username) {
+        return em.createQuery("SELECT u FROM User u WHERE u.username = :username", User.class)
+                .setParameter("username", username)
+                .getResultList()
+                .stream()
+                .findFirst();
     }
 }

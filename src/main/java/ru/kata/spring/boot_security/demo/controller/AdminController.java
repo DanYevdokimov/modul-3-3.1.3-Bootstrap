@@ -2,8 +2,12 @@ package ru.kata.spring.boot_security.demo.controller;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
-import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.ModelAttribute;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.servlet.ModelAndView;
 import ru.kata.spring.boot_security.demo.model.User;
 import ru.kata.spring.boot_security.demo.service.RoleService;
 import ru.kata.spring.boot_security.demo.service.UserService;
@@ -15,7 +19,6 @@ public class AdminController {
     private final UserService userService;
     private final RoleService roleService;
 
-
     @Autowired
     public AdminController(UserService userService, RoleService roleService) {
         this.userService = userService;
@@ -23,38 +26,39 @@ public class AdminController {
     }
 
     @GetMapping
-    public String getUserAddForm(Model model) {
-        model.addAttribute("users", userService.getAllUsers());
-        model.addAttribute("roles", roleService.getAllRoles());
-        model.addAttribute("newUser", new User());
-        return "admin/adminPanel";
+    public ModelAndView getUserAddForm() {
+        ModelAndView modelAndView = new ModelAndView("admin/adminPanel");
+        modelAndView.addObject("users", userService.getAllUsers());
+        modelAndView.addObject("roles", roleService.getAllRoles());
+        modelAndView.addObject("newUser", new User());
+        return modelAndView;
     }
 
     @GetMapping("/updateUser")
-    public String getUserUpdateForm(@RequestParam(value = "editUserId") Long editUserId, Model model) {
-        model.addAttribute("existingUser", userService.getUserById(editUserId));
-        return "admin/adminPanel";
+    public ModelAndView getUserUpdateForm(@RequestParam(value = "editUserId") Long editUserId) {
+        ModelAndView modelAndView = new ModelAndView("admin/adminPanel");
+        modelAndView.addObject("existingUser", userService.getUserById(editUserId));
+        return modelAndView;
     }
 
     @PostMapping("/saveUser")
-    public String saveUser(@ModelAttribute("newUser") User user,
-                           @RequestParam(value = "newRoles") String[] newRoles) {
+    public ModelAndView saveUser(@ModelAttribute("newUser") User user,
+                                 @RequestParam(value = "newRoles") String[] newRoles) {
         userService.saveUser(user, newRoles);
-        return "redirect:/admin";
+        return new ModelAndView("redirect:/admin");
     }
 
     @PostMapping("/updateUser")
-    public String updateUser(@RequestParam("userId") long id,
-                             @ModelAttribute("existingUser") User user,
-                             @RequestParam(value = "selectedRoles", required = false) String[] selectedRoles) {
+    public ModelAndView updateUser(@RequestParam("userId") long id,
+                                   @ModelAttribute("existingUser") User user,
+                                   @RequestParam(value = "selectedRoles", required = false) String[] selectedRoles) {
         userService.updateUser(id, user, selectedRoles);
-        return "redirect:/admin";
+        return new ModelAndView("redirect:/admin");
     }
 
     @PostMapping("/deleteUser")
-    public String deleteUser(@RequestParam("userId") long id) {
+    public ModelAndView deleteUser(@RequestParam("userId") long id) {
         userService.deleteUser(id);
-        return "redirect:/admin";
+        return new ModelAndView("redirect:/admin");
     }
-
 }

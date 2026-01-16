@@ -9,9 +9,23 @@ import org.springframework.security.config.annotation.web.configuration.WebSecur
 import org.springframework.security.crypto.password.PasswordEncoder;
 import ru.kata.spring.boot_security.demo.service.UserDetailServiceImpl;
 
+import java.util.Objects;
+
 @Configuration
 @EnableWebSecurity
 public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
+    @Override
+    public boolean equals(Object o) {
+        if (o == null || getClass() != o.getClass()) return false;
+        WebSecurityConfig that = (WebSecurityConfig) o;
+        return Objects.equals(successUserHandler, that.successUserHandler) && Objects.equals(userDetailServiceImpl, that.userDetailServiceImpl) && Objects.equals(passwordEncoder, that.passwordEncoder);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(successUserHandler, userDetailServiceImpl, passwordEncoder);
+    }
+
     private final SuccessUserHandler successUserHandler;
     private final UserDetailServiceImpl userDetailServiceImpl;
     private final PasswordEncoder passwordEncoder;
@@ -41,42 +55,7 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
                 .permitAll();
     }
 
-//    // аутентификация inMemory
-//    @Bean
-//    @Override
-//    public UserDetailsService userDetailsService() {
-//        UserDetails user =
-//                User.withDefaultPasswordEncoder()
-//                        .username("user")
-//                        .password("user")
-//                        .roles("USER")
-//                        .build();
-//
-//        return new InMemoryUserDetailsManager(user);
-//    }
-//    @Bean
-//    public JdbcUserDetailsManager users(DataSource dataSource) {
-//        UserDetails user = User.builder()
-//                .username("user")
-//                .password("100")
-//                .roles("USER")
-//                .build();
-//        UserDetails admin = User.builder()
-//                .username("admin")
-//                .password("100")
-//                .roles("ADMIN")
-//                .build();
-//        JdbcUserDetailsManager jdbcUserDetailsManager = new JdbcUserDetailsManager(dataSource);
-//        if (jdbcUserDetailsManager.userExists(user.getUsername())) {
-//            jdbcUserDetailsManager.deleteUser(user.getUsername());
-//        }
-//        if (jdbcUserDetailsManager.userExists(admin.getUsername())) {
-//            jdbcUserDetailsManager.deleteUser(admin.getUsername());
-//        }
-//        jdbcUserDetailsManager.createUser(user);
-//        jdbcUserDetailsManager.createUser(admin);
-//        return jdbcUserDetailsManager;
-//    }
+
 
     @Bean
     public DaoAuthenticationProvider authenticationProvider() {
