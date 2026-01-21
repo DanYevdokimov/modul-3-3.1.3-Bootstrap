@@ -1,6 +1,5 @@
 package ru.kata.spring.boot_security.demo.controller;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Controller;
@@ -16,7 +15,6 @@ public class UserController {
 
     private final UserService userService;
 
-    @Autowired
     public UserController(UserService userService) {
         this.userService = userService;
     }
@@ -25,12 +23,7 @@ public class UserController {
     public String showUserInfo(Model model) {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         Optional<User> user = userService.findByUsername(auth.getName());
-
-
         model.addAttribute("user", user);
-
-
-
         return "userInfo";
     }
 }

@@ -1,6 +1,5 @@
 package ru.kata.spring.boot_security.demo.service;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -27,7 +26,6 @@ public class UserServiceImpl implements UserService {
     @PersistenceContext
     private EntityManager em;
 
-    @Autowired
     public UserServiceImpl(UserDao userDao, RoleService roleService, PasswordEncoder passwordEncoder) {
         this.userDao = userDao;
         this.roleService = roleService;
@@ -86,14 +84,12 @@ public class UserServiceImpl implements UserService {
         existingUser.setAge(user.getAge());
 
         if (!existingUser.getUsername().equals(user.getUsername())) {
-
             Optional<User> userWithNewUsername = findByUsername(user.getUsername());
             if (userWithNewUsername.isPresent() && userWithNewUsername.get().getId() != id) {
                 throw new RuntimeException("User with username " + user.getUsername() + " already exists");
             }
             existingUser.setUsername(user.getUsername());
         }
-
 
         if (user.getPassword() != null && !user.getPassword().trim().isEmpty()) {
             existingUser.setPassword(passwordEncoder.encode(user.getPassword()));
@@ -102,7 +98,7 @@ public class UserServiceImpl implements UserService {
         userDao.updateUser(existingUser);
     }
 
-
+    @Override
     public Optional<User> findByUsername(String username) {
         return em.createQuery("SELECT u FROM User u WHERE u.username = :username", User.class)
                 .setParameter("username", username)
